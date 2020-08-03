@@ -1,0 +1,7 @@
+{
+  "utterance": "pause",
+  "intent_type": "pause_now_intent",
+  "intent": {
+    "Pause": "pause"
+  }
+}

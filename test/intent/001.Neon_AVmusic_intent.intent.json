@@ -1,0 +1,8 @@
+{
+  "utterance": "neon av play some imagine dragons music playlist",
+  "intent_type": "Neon_AVmusic_intent",
+  "intent": {
+    "Neon": "neon",
+    "AVmusicKeyword": "av play some"
+  }
+}
