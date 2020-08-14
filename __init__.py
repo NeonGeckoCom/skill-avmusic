@@ -105,8 +105,8 @@ class AVmusicSkill(CommonPlaySkill):
         #     }
         # self.init_settings(default)
 
-        self.sock_path = self.ngi_settings.content['sock_path']
-        self.volume = self.ngi_settings.content['volume']
+        self.sock_path = self.settings['sock_path']
+        self.volume = self.settings['volume']
         self.quackagent = {'User-Agent': base64.b64decode(
             self.settings.get("quack_api", "J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="))}
         # self.npr_link = self.ngi_settings.content['news_link']
