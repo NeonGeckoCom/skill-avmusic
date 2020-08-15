@@ -94,19 +94,19 @@ class AVmusicSkill(CommonPlaySkill):
             self.pulse = pulsectl.Pulse('Mycroft-audio-service')
             self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
-        default = {
-            'sock_path': '/tmp/mpv',
-            'volume': 1.0,
-            'quack_api': "J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="
-            # 'news_link': "https://nprdmp-live01-aac.akacast.akamaistream.net/7/91/364917/v1/npr."
-            #              "akacast.akamaistream.net/nprdmp_live01_aac?ck=1510413392918",
-            # "mobile_news_link": "https://podcasts.google.com/?feed="
-            #                     "aHR0cHM6Ly93d3cubnByLm9yZy9yc3MvcG9kY2FzdC5waHA_aWQ9NTAwMDA1"
-            }
-        self.init_settings(default)
+        # default = {
+        #     'sock_path': '/tmp/mpv',
+        #     'volume': 1.0,
+        #     'quack_api': "J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="
+        #     # 'news_link': "https://nprdmp-live01-aac.akacast.akamaistream.net/7/91/364917/v1/npr."
+        #     #              "akacast.akamaistream.net/nprdmp_live01_aac?ck=1510413392918",
+        #     # "mobile_news_link": "https://podcasts.google.com/?feed="
+        #     #                     "aHR0cHM6Ly93d3cubnByLm9yZy9yc3MvcG9kY2FzdC5waHA_aWQ9NTAwMDA1"
+        #     }
+        # self.init_settings(default)
 
-        self.sock_path = self.ngi_settings.content['sock_path']
-        self.volume = self.ngi_settings.content['volume']
+        self.sock_path = self.settings['sock_path']
+        self.volume = self.settings['volume']
         self.quackagent = {'User-Agent': base64.b64decode(
             self.settings.get("quack_api", "J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="))}
         # self.npr_link = self.ngi_settings.content['news_link']
@@ -816,7 +816,7 @@ class AVmusicSkill(CommonPlaySkill):
         self.disable_intent('not_now_intent')
 
     def _handle_pause(self, message):
-        if self.check_for_signal("AV_active"):
+        if self.check_for_signal("AV_active", -1):
             if self.gui_enabled:
                 self.gui["status"] = "pause"
             elif not self.server:
@@ -827,7 +827,7 @@ class AVmusicSkill(CommonPlaySkill):
                               message=message)
 
     def _handle_resume(self, message):
-        if self.check_for_signal("AV_active"):
+        if self.check_for_signal("AV_active", -1):
             if self.gui_enabled:
                 self.gui["status"] = "play"
             elif not self.server:
