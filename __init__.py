@@ -816,7 +816,7 @@ class AVmusicSkill(CommonPlaySkill):
         self.disable_intent('not_now_intent')
 
     def _handle_pause(self, message):
-        if self.check_for_signal("AV_active"):
+        if self.check_for_signal("AV_active", -1):
             if self.gui_enabled:
                 self.gui["status"] = "pause"
             elif not self.server:
@@ -827,7 +827,7 @@ class AVmusicSkill(CommonPlaySkill):
                               message=message)
 
     def _handle_resume(self, message):
-        if self.check_for_signal("AV_active"):
+        if self.check_for_signal("AV_active", -1):
             if self.gui_enabled:
                 self.gui["status"] = "play"
             elif not self.server:
