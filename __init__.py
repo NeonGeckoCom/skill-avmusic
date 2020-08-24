@@ -30,7 +30,7 @@ import pulsectl
 import socket
 # from os.path import dirname
 from subprocess import Popen, PIPE  # DEVNULL, STDOUT,
-
+from youtube_searcher import search_youtube
 import requests
 from adapt.intent import IntentBuilder
 from bs4 import BeautifulSoup, SoupStrainer
@@ -107,8 +107,8 @@ class AVmusicSkill(CommonPlaySkill):
 
         self.sock_path = self.settings['sock_path']
         self.volume = self.settings['volume']
-        self.quackagent = {'User-Agent': base64.b64decode(
-            self.settings.get("quack_api", "J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="))}
+        # self.quackagent = {'User-Agent': base64.b64decode(
+        #     self.settings.get("quack_api", "J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="))}
         # self.npr_link = self.ngi_settings.content['news_link']
         # self.mobile_news_link = self.ngi_settings.content['mobile_news_link']
 
@@ -197,8 +197,8 @@ class AVmusicSkill(CommonPlaySkill):
                 LOG.debug(f"search: {utterance}")
                 results = self.search(utterance)
                 LOG.debug(results)
-                if len(results) > 0:
-                    link = embed_url(str(results[0]))
+                if len(results.get("videos")) > 0:
+                    link = embed_url(results.get("videos")[0].get("url"))
             LOG.info(f"Got video: {link}")
 
             if "news" in phrase and link:
@@ -212,6 +212,7 @@ class AVmusicSkill(CommonPlaySkill):
     def CPS_start(self, phrase, data, message=None):
         link = data["link"]
         results = data["results"]
+        LOG.debug(f"AVMusic selected to play {link}")
         if not link:
             LOG.error("No Link!!")
             self.speak("No Link!")
@@ -307,8 +308,8 @@ class AVmusicSkill(CommonPlaySkill):
                 while not self.request_queue.empty():
                     LOG.warning(f"DM: AVMusic Queue isn't empty!!!")
                     self.request_queue.get()
-                LOG.debug(f"add to queue: {results[0]}")
-                self.request_queue.put(results[0])
+                LOG.debug(f'add to queue: {results.get("videos", [])[0]}')
+                self.request_queue.put(results.get("videos", [])[0].get("url"))
                 LOG.debug(self.request_queue.empty())
                 self.video_results["local"] = {"current": 0, "results": results}
                 if "http" not in phrase:
@@ -322,31 +323,32 @@ class AVmusicSkill(CommonPlaySkill):
                 #     self.handle_play_now_intent()
 
     def search(self, text):
-        # results = search_youtube(text)
-        query = urllib.parse.quote(text)
-        url = "https://www.youtube.com/results?search_query=" + query
-        # response = urllib.request.urlopen(url)
-        # html = response.read()
-
-        response = requests.get(url, headers=self.quackagent)
-        html = response.text
-        a_tag = SoupStrainer('a')
-        soup = BeautifulSoup(html, "html.parser", parse_only=a_tag)
-        results = []
-        LOG.debug(soup)
-        for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
-            vid_suffix = vid['href']
-            LOG.debug(vid_suffix)
-
-            # Check if link is a video link
-            if vid_suffix.startswith("/watch?v="):
-                results.append(f"http://www.youtube.com{vid_suffix}")
-                # Return first valid search result
-                # return f"http://www.youtube.com{vid_suffix}"
-            # if not vid['href'].startswith("https://googleads.g.doubleclick.net/‌​") \
-            #         and not vid['href'].startswith("/user") and not vid['href'].startswith("/channel"):
-            #     LOG.info("http://www.youtube.com/" + vid['href'])
-            #     return "http://www.youtube.com/" + vid['href']
+        # # results = search_youtube(text)
+        # query = urllib.parse.quote(text)
+        # url = "https://www.youtube.com/results?search_query=" + query
+        # # response = urllib.request.urlopen(url)
+        # # html = response.read()
+        #
+        # response = requests.get(url, headers=self.quackagent)
+        # html = response.text
+        # a_tag = SoupStrainer('a')
+        # soup = BeautifulSoup(html, "html.parser", parse_only=a_tag)
+        # results = []
+        # LOG.debug(soup)
+        # for vid in soup.findAll(attrs={'class': 'yt-uix-tile-link'}):
+        #     vid_suffix = vid['href']
+        #     LOG.debug(vid_suffix)
+        #
+        #     # Check if link is a video link
+        #     if vid_suffix.startswith("/watch?v="):
+        #         results.append(f"http://www.youtube.com{vid_suffix}")
+        #         # Return first valid search result
+        #         # return f"http://www.youtube.com{vid_suffix}"
+        #     # if not vid['href'].startswith("https://googleads.g.doubleclick.net/‌​") \
+        #     #         and not vid['href'].startswith("/user") and not vid['href'].startswith("/channel"):
+        #     #     LOG.info("http://www.youtube.com/" + vid['href'])
+        #     #     return "http://www.youtube.com/" + vid['href']
+        results = search_youtube(text)
         return results
 
     # def av_music(self, message):
@@ -688,20 +690,25 @@ class AVmusicSkill(CommonPlaySkill):
                 # results = self.search(utterance)
                 if results:
                     LOG.debug(results)
-                    if isinstance(results, str):
+                    if isinstance(results, str):  # TODO: Depreciated? DM
                         link = results
-                    elif isinstance(results, list):
+                    elif isinstance(results, list):  # TODO: Depreciated? DM
                         link = results[0]
+                    elif isinstance(results, dict):
+                        link = results.get("videos", [])[0].get("url)")
                     else:
                         link = None
                         LOG.error(f"No link in results={results}")
                     if "playlist" in self.requested_options and not self.gui_enabled:
                         # TODO: Gui handle playlists DM
                         LOG.info("playlist requested")
-                        for result in results:
-                            if "&list=" in result:
-                                link = playlist_url(result)
-                                break
+                        if isinstance(results, list):
+                            for result in results:
+                                if "&list=" in result:
+                                    link = playlist_url(result)
+                                    break
+                        elif isinstance(results, dict):
+                            link = results.get("playlists", [])[0].get("url")
                 else:
                     link = None
                 LOG.debug(link)
@@ -841,15 +848,16 @@ class AVmusicSkill(CommonPlaySkill):
         user = "local"
         if self.gui_enabled:
             if user in self.video_results.keys():
-                track_list = self.video_results[user].get("results")
+                track_list = self.video_results[user].get("results", {}).get("videos", [])
                 playing = self.video_results[user].get("current")
                 playing += 1
                 LOG.info(f"skipping. new source={track_list[playing]}")
 
-                video = pafy.new(track_list[playing])
+                video = pafy.new(track_list[playing].get("url"))
                 playstream = video.streams[0]
                 LOG.info(video)
-                self.gui["title"] = str(video).split(":", 1)[1].strip().split("\n", 1)[0]
+                self.gui["title"] = track_list[playing].get("title")
+                # self.gui["title"] = str(video).split(":", 1)[1].strip().split("\n", 1)[0]
                 self.gui["videoSource"] = playstream.url
                 self.gui["status"] = "play"  # play, stop, pause
                 self.video_results[user]["current"] = playing
@@ -864,17 +872,18 @@ class AVmusicSkill(CommonPlaySkill):
         user = "local"
         if self.gui_enabled:
             if user in self.video_results.keys():
-                track_list = self.video_results[user].get("results")
+                track_list = self.video_results[user].get("results", {}).get("videos", [])
                 playing = self.video_results[user].get("current")
                 playing -= 1
                 if playing < 0:
                     playing = 0
                 LOG.info(f"skipping. new source={track_list[playing]}")
 
-                video = pafy.new(track_list[playing])
+                video = pafy.new(track_list[playing].get("url"))
                 playstream = video.streams[0]
                 LOG.info(video)
-                self.gui["title"] = str(video).split(":", 1)[1].strip().split("\n", 1)[0]
+                self.gui["title"] = track_list[playing].get("title")
+                # self.gui["title"] = str(video).split(":", 1)[1].strip().split("\n", 1)[0]
                 self.gui["videoSource"] = playstream.url
                 self.gui["status"] = "play"  # play, stop, pause
                 self.video_results[user]["current"] = playing
