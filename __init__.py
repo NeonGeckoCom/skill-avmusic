@@ -348,7 +348,11 @@ class AVmusicSkill(CommonPlaySkill):
         #     #         and not vid['href'].startswith("/user") and not vid['href'].startswith("/channel"):
         #     #     LOG.info("http://www.youtube.com/" + vid['href'])
         #     #     return "http://www.youtube.com/" + vid['href']
-        results = search_youtube(text)
+        try:
+            results = search_youtube(text)
+        except Exception as e:
+            LOG.error(e)
+            return None
         return results
 
     # def av_music(self, message):
