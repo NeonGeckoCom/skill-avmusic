@@ -1,2 +1,2 @@
 youtube-dl>=2018.6.18
-youtube_searcher
+youtube_searcher==0.1.1
