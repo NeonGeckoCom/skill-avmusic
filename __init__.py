@@ -52,7 +52,7 @@ def embed_url(video_url):
     import re
     LOG.info(video_url)
     regex = r"(?:http:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)"
-    return re.sub(regex, r"https://www.youtube.com/embed/\1", video_url)
+    return re.sub(regex, r"www.youtube.com/embed/\1", video_url)
 
 
 def playlist_url(video_url):
@@ -146,68 +146,68 @@ class AVmusicSkill(CommonPlaySkill):
         # self.disable_intent('playback_control_intent')
 
     def CPS_match_query_phrase(self, phrase, message):
-        if self.neon_in_request(message):
-            # self.stop()
-            self.requested_options = []
-            utterance = phrase.lower()
-            if self.check_for_signal('CORE_skipWakeWord', -1):
-                if self.voc_match(phrase, 'Neon'):
-                    pass
-                    # utterance = utterance.replace(message.data.get('Neon'), "")  # TODO: Better parse DM
-            LOG.info(utterance)
-            # if "video" not in utterance:
-            #     self.requested_options.append("music_only")
-            #     utterance = utterance.replace("video", "")
-
-            # Clean keywords from search string (utterance)
-            if not self.voc_match(phrase, "Video") and "youtube" not in utterance:
-                self.requested_options.append("music_only")
-            elif self.voc_match(phrase, "Video"):
+        # if self.neon_in_request(message):
+        # self.stop()
+        self.requested_options = []
+        utterance = phrase.lower()
+        if self.check_for_signal('CORE_skipWakeWord', -1):
+            if self.voc_match(phrase, 'Neon'):
                 pass
-                # utterance = utterance.replace(message.data.get("Video"), "")  # TODO: Better parse DM
+                # utterance = utterance.replace(message.data.get('Neon'), "")  # TODO: Better parse DM
+        LOG.info(utterance)
+        # if "video" not in utterance:
+        #     self.requested_options.append("music_only")
+        #     utterance = utterance.replace("video", "")
 
-            if self.voc_match(phrase, "Repeat") and self.voc_match(phrase, "Mix"):
-                self.requested_options.append("playlist_repeat")
-                # utterance = utterance.replace(message.data.get('Mix'), "")  # TODO: Better parse DM
-                # utterance = utterance.replace(message.data.get('Repeat'), "")  # TODO: Better parse DM
-            elif self.voc_match(phrase, "Repeat"):
-                self.requested_options.append("repeat")
-                # utterance = utterance.replace(message.data.get('Repeat'), "")  # TODO: Better parse DM
-            elif self.voc_match(phrase, "Mix"):
-                self.requested_options.append("playlist")
-                # utterance = utterance.replace(message.data.get('Mix'), "")
-            # else:
-            #     self.requested_options.append("news")
-            LOG.info(self.requested_options)
-            # utterance = utterance.replace(message.data.get('AVmusicKeyword'), '').strip()  # TODO: Better parse DM
-            if utterance.split()[0] in ("a", "some"):
-                utterance = " ".join(utterance.split()[1:])
+        # Clean keywords from search string (utterance)
+        if not self.voc_match(phrase, "Video") and "youtube" not in utterance:
+            self.requested_options.append("music_only")
+        elif self.voc_match(phrase, "Video"):
+            pass
+            # utterance = utterance.replace(message.data.get("Video"), "")  # TODO: Better parse DM
 
-            # self.start_the_mpv(["repeat", "custom", "music_only"], self.utterance)
+        if self.voc_match(phrase, "Repeat") and self.voc_match(phrase, "Mix"):
+            self.requested_options.append("playlist_repeat")
+            # utterance = utterance.replace(message.data.get('Mix'), "")  # TODO: Better parse DM
+            # utterance = utterance.replace(message.data.get('Repeat'), "")  # TODO: Better parse DM
+        elif self.voc_match(phrase, "Repeat"):
+            self.requested_options.append("repeat")
+            # utterance = utterance.replace(message.data.get('Repeat'), "")  # TODO: Better parse DM
+        elif self.voc_match(phrase, "Mix"):
+            self.requested_options.append("playlist")
+            # utterance = utterance.replace(message.data.get('Mix'), "")
+        # else:
+        #     self.requested_options.append("news")
+        LOG.info(self.requested_options)
+        # utterance = utterance.replace(message.data.get('AVmusicKeyword'), '').strip()  # TODO: Better parse DM
+        if utterance.split()[0] in ("a", "some"):
+            utterance = " ".join(utterance.split()[1:])
 
-            # Check for a given link and use that, else search passed phrase
-            link = None
-            results = None
-            for word in message.context.get("cc_data", {}).get("raw_utterance", utterance).split():
-                if word.startswith("https://"):
-                    link = word
-                    results = [link]
-                    break
-            if not link:
-                LOG.debug(f"search: {utterance}")
-                results = self.search(utterance)
-                LOG.debug(results)
-                if len(results.get("videos")) > 0:
-                    link = embed_url(results.get("videos")[0].get("url"))
-            LOG.info(f"Got video: {link}")
+        # self.start_the_mpv(["repeat", "custom", "music_only"], self.utterance)
 
-            if "news" in phrase and link:
-                conf = CPSMatchLevel.GENERIC
-            elif link:
-                conf = CPSMatchLevel.TITLE
-            else:
-                conf = False
-            return (phrase, conf, {"results": results, "link": link, "skill_gui": True})
+        # Check for a given link and use that, else search passed phrase
+        link = None
+        results = None
+        for word in message.context.get("cc_data", {}).get("raw_utterance", utterance).split():
+            if word.startswith("https://"):
+                link = word
+                results = [link]
+                break
+        if not link:
+            LOG.debug(f"search: {utterance}")
+            results = self.search(utterance)
+            LOG.debug(results)
+            if len(results.get("videos")) > 0:
+                link = embed_url(results.get("videos")[0].get("url"))
+        LOG.info(f"Got video: {link}")
+
+        if "news" in phrase and link:
+            conf = CPSMatchLevel.GENERIC
+        elif link:
+            conf = CPSMatchLevel.TITLE
+        else:
+            conf = False
+        return (phrase, conf, {"results": results, "link": link, "skill_gui": True})
 
     def CPS_start(self, phrase, data, message=None):
         link = data["link"]
