@@ -106,7 +106,7 @@ class AVmusicSkill(CommonPlaySkill):
         # self.init_settings(default)
 
         self.sock_path = self.settings['sock_path']
-        self.volume = self.settings['volume']
+        self.volume = float(self.settings['volume'])
         # self.quackagent = {'User-Agent': base64.b64decode(
         #     self.settings.get("quack_api", "J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw=="))}
         # self.npr_link = self.ngi_settings.content['news_link']
@@ -832,8 +832,11 @@ class AVmusicSkill(CommonPlaySkill):
                 self.gui["status"] = "pause"
             elif not self.server:
                 command = b'{"command": ["set", "pause", "yes"]}\n'
-                self.socket.send(command)
-                LOG.debug(self.socket.recv(1024))
+                try:
+                    self.socket.send(command)
+                    LOG.debug(self.socket.recv(1024))
+                except Exception as e:
+                    LOG.error(e)
             self.speak_dialog('SayResume', {'ww': self.user_info_available['listener']['wake_word'].title()},
                               message=message)
 
@@ -843,8 +846,11 @@ class AVmusicSkill(CommonPlaySkill):
                 self.gui["status"] = "play"
             elif not self.server:
                 command = b'{"command": ["set", "pause", "no"]}\n'
-                self.socket.send(command)
-                LOG.debug(self.socket.recv(1024))
+                try:
+                    self.socket.send(command)
+                    LOG.debug(self.socket.recv(1024))
+                except Exception as e:
+                    LOG.error(e)
             self.speak("Resuming playback", message=message)
 
     def _handle_next(self, message):
@@ -868,8 +874,11 @@ class AVmusicSkill(CommonPlaySkill):
 
         elif not self.server and self.check_for_signal("AV_active", -1):
             command = b'{"command": ["playlist_next"]}\n'
-            self.socket.send(command)
-            LOG.debug(self.socket.recv(1024))
+            try:
+                self.socket.send(command)
+                LOG.debug(self.socket.recv(1024))
+            except Exception as e:
+                LOG.error(e)
         self.speak("Skipping next", message=message)
 
     def _handle_prev(self, message):
@@ -897,8 +906,11 @@ class AVmusicSkill(CommonPlaySkill):
                 pass
             elif not self.server:
                 command = b'{"command": ["playlist_prev"]}\n'
-                self.socket.send(command)
-                LOG.debug(self.socket.recv(1024))
+                try:
+                    self.socket.send(command)
+                    LOG.debug(self.socket.recv(1024))
+                except Exception as e:
+                    LOG.error(e)
         self.speak("Skipping back", message=message)
 
     def stop(self):
