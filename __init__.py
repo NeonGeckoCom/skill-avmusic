@@ -311,13 +311,13 @@ class AVmusicSkill(CommonPlaySkill):
                 LOG.debug(f'add to queue: {results.get("videos", [])[0]}')
                 self.request_queue.put(results.get("videos", [])[0].get("url"))
                 LOG.debug(self.request_queue.empty())
-                self.video_results["local"] = {"current": 0, "results": results}
+                self.video_results[self.get_utterance_user(message)] = {"current": 0, "results": results}
                 if "http" not in phrase:
                     self.speak('Would you like me to play it now?', True)
                     t = multiprocessing.Process(target=self.check_timeout())  # TODO: Use skill event scheduler DM
                     t.start()
                 else:
-                    self.handle_play_now_intent()
+                    self.handle_play_now_intent(message)
 
                 # self.speak('Would you like me to play it now?', True) if "http" not in phrase else \
                 #     self.handle_play_now_intent()
@@ -665,7 +665,7 @@ class AVmusicSkill(CommonPlaySkill):
     #         # if self.check_for_signal("AV_WW"):
     #         #     NeonHelpers.disable_ww()
 
-    def handle_play_now_intent(self):
+    def handle_play_now_intent(self, message):
         # TODO: Handle playback over
         # self.enable_intent('playback_control_intent')
         self.create_signal("AV_agreed_to_play")
@@ -679,8 +679,8 @@ class AVmusicSkill(CommonPlaySkill):
         LOG.debug(self.request_queue.empty())
         if not self.request_queue.empty():
             results = self.request_queue.get()
-        elif self.video_results.get("local"):
-            results = self.video_results["local"]["results"]
+        elif self.video_results.get(self.get_utterance_user(message)):
+            results = self.video_results[self.get_utterance_user(message)]["results"]
         else:
             results = None
         if results:
@@ -855,7 +855,7 @@ class AVmusicSkill(CommonPlaySkill):
 
     def _handle_next(self, message):
         LOG.debug("got here")
-        user = "local"
+        user = self.get_utterance_user(message)
         if self.gui_enabled:
             if user in self.video_results.keys():
                 track_list = self.video_results[user].get("results", {}).get("videos", [])
@@ -882,7 +882,7 @@ class AVmusicSkill(CommonPlaySkill):
         self.speak("Skipping next", message=message)
 
     def _handle_prev(self, message):
-        user = "local"
+        user = self.get_utterance_user(message)
         if self.gui_enabled:
             if user in self.video_results.keys():
                 track_list = self.video_results[user].get("results", {}).get("videos", [])
