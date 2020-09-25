@@ -735,7 +735,7 @@ class AVmusicSkill(CommonPlaySkill):
                             output, error = self.process.communicate()
                             # First Playback Attempt Failed
                             if self.process.returncode != 0 and not self.check_for_signal("AV_stoppedFromPause"):
-                                LOG.info("Failed at request:  %d %s %s" % (self.process.returncode, output, error))
+                                LOG.warning("Failed at request:  %d %s %s" % (self.process.returncode, output, error))
                                 # LOG.info("Trying again")
                                 # if self.process.pid in self.pid:
                                 #     self.pid.remove(self.process.pid)
@@ -748,7 +748,7 @@ class AVmusicSkill(CommonPlaySkill):
                                     if self.process:
                                         if self.process.returncode != 0 and not\
                                                 self.check_for_signal("AV_stoppedFromPause"):
-                                            LOG.info("Failed at request:  %d %s %s" % (self.process.returncode, output,
+                                            LOG.warning("Failed at request:  %d %s %s" % (self.process.returncode, output,
                                                                                        error))
                                             self.speak_dialog('TryAgain')
                                             self.stop()
