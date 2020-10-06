@@ -199,6 +199,9 @@ class AVmusicSkill(CommonPlaySkill):
             LOG.debug(results)
             if len(results.get("videos")) > 0:
                 link = embed_url(results.get("videos")[0].get("url"))
+            else:
+                LOG.warning(f"Search returned no video results! results={results}")
+                return None
         LOG.info(f"Got video: {link}")
 
         if "news" in phrase and link:
@@ -215,7 +218,9 @@ class AVmusicSkill(CommonPlaySkill):
         LOG.debug(f"AVMusic selected to play {link}")
         if not link:
             LOG.error("No Link!!")
-            self.speak("No Link!")
+            LOG.debug(results)
+            # self.speak("No Link!")
+            self.speak_dialog("TryAgain")
         else:
             if self.server:
                 # self.speak(str(self.search(utterance + "playlist")))
