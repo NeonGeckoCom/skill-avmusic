@@ -6,10 +6,6 @@ skillMetadata:
           type: text
           label: MPV Socket path
           value: /tmp/mpv
-        - name: quack_api
-          type: text
-          label: Quack API User Agent for scrapting YouTube results
-          value: J0dvb2dsZWJvdC8yLjEgKCtodHRwOi8vd3d3Lmdvb2dsZS5jb20vYm90Lmh0bWwpJw==
     - name: Playback Settings
       fields:
         - name: volume
