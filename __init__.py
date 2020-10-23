@@ -17,12 +17,13 @@
 # Specialized conversational reconveyance options from Conversation Processing Intelligence Corp.
 # US Patents 2008-2020: US7424516, US20140161250, US20140177813, US8638908, US8068604, US8553852, US10530923, US10530924
 # China Patent: CN102017585  -  Europe Patent: EU2156652  -  Patents Pending
-import base64
+
+# import base64
 import os
 # import signal
-import urllib.error
-import urllib.parse
-import urllib.request
+# import urllib.error
+# import urllib.parse
+# import urllib.request
 import multiprocessing
 import time
 import pulsectl
@@ -31,9 +32,9 @@ import socket
 # from os.path import dirname
 from subprocess import Popen, PIPE  # DEVNULL, STDOUT,
 from youtube_searcher import search_youtube
-import requests
+# import requests
 from adapt.intent import IntentBuilder
-from bs4 import BeautifulSoup, SoupStrainer
+# from bs4 import BeautifulSoup, SoupStrainer
 # from youtube_searcher import search_youtube
 from pafy import pafy
 
@@ -197,6 +198,9 @@ class AVmusicSkill(CommonPlaySkill):
             LOG.debug(f"search: {utterance}")
             results = self.search(utterance)
             LOG.debug(results)
+            if not results:
+                LOG.warning(f"Search returned no results! results={results}")
+                return None
             if len(results.get("videos")) > 0:
                 link = embed_url(results.get("videos")[0].get("url"))
             else:
@@ -355,6 +359,9 @@ class AVmusicSkill(CommonPlaySkill):
         #     #     return "http://www.youtube.com/" + vid['href']
         try:
             results = search_youtube(text)
+        except IndexError:
+            LOG.warning("No Results found!")
+            return None
         except Exception as e:
             LOG.error(e)
             return None
