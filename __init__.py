@@ -32,6 +32,7 @@ import socket
 # from os.path import dirname
 from subprocess import Popen, PIPE  # DEVNULL, STDOUT,
 from youtube_searcher import search_youtube
+from .tempfix.search.searcher import YoutubeSearcher
 # import requests
 from adapt.intent import IntentBuilder
 # from bs4 import BeautifulSoup, SoupStrainer
@@ -361,10 +362,17 @@ class AVmusicSkill(CommonPlaySkill):
             results = search_youtube(text)
         except IndexError:
             LOG.warning("No Results found!")
-            return None
+            results = None
         except Exception as e:
             LOG.error(e)
-            return None
+            results = None
+
+        if not results:
+            LOG.warning("Attempt tempfix search")
+            try:
+                results = YoutubeSearcher().search_youtube(text)
+            except Exception as e:
+                LOG.error(e)
         return results
 
     # def av_music(self, message):

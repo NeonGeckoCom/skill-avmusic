@@ -29,11 +29,8 @@ All of the requirements should be installed automatically during original Neonâ€
   
 # Description  
   
-The skill provides the functionality to playback any audio or video requested by the user. It will 
-[draw a new media-player window](#picture) to accomodate the request and play the selected content.
-  
-The video-player of choice for this skill is MPV, pre-installed by Neon at startup. AVmusic implements full integration
-of youtube_dl services and supports requests including but not limited to:
+The skill provides the functionality to playback any audio or video requested by the user.
+AVmusic implements full integration of youtube_dl services and supports requests including but not limited to:
   
 - Music bands  
       
