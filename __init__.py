@@ -373,6 +373,7 @@ class AVmusicSkill(CommonPlaySkill):
                 results = YoutubeSearcher().search_youtube(text)
             except Exception as e:
                 LOG.error(e)
+            LOG.warning(f"Got results: {results}")
         return results
 
     # def av_music(self, message):
