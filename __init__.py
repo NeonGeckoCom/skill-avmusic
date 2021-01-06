@@ -371,6 +371,7 @@ class AVmusicSkill(CommonPlaySkill):
             LOG.warning("Attempt tempfix search")
             try:
                 results = YoutubeSearcher().search_youtube(text)
+                LOG.info(f"Got results: {results.get('videos')}")
             except Exception as e:
                 LOG.error(e)
         return results
