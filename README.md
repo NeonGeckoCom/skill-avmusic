@@ -1,11 +1,11 @@
 
-# ![](https://0000.us/klatchat/app/files/neon_images/icons/neon_paw.png)AVmusic  
+# <img src='https://0000.us/klatchat/app/files/neon_images/icons/neon_skill.png' card_color="#FF8600" width="50" style="vertical-align:bottom">AVmusic  
   
-# Summary  
+## Summary  
   
 Provides the video/audio playback of any music or video request made by the user. No need to specify the location of the files or register any accounts. Just say what you would like to listen to and enjoy.  
   
-# Requirements  
+## Requirements  
 All of the requirements should be installed automatically during original Neon’s setup. If you have any problems, or are adding the skill later on, please [feel free to contact our team for support](#contact-support) or use the following instructions to install the requirements manually:  
   
 [MPV](https://mpv.io/), which is the default video-player.  
@@ -27,7 +27,7 @@ All of the requirements should be installed automatically during original Neon�
     source ${core}/.venv/bin/activate 
     pip install --upgrade youtube_dl   
   
-# Description  
+## Description  
   
 The skill provides the functionality to playback any audio or video requested by the user.
 AVmusic implements full integration of youtube_dl services and supports requests including but not limited to:
@@ -64,7 +64,7 @@ If you are typing your command in the terminal instead of audibly speaking it, d
     
   
   
-# How to Use  
+## Examples  
   
 First, make your request:  
   
@@ -99,12 +99,12 @@ At this point you can say commands like `pause`, `resume`, `next`, and `previous
   
 If there is a problem with locating the requested audio or video at any point, Neon will prompt you to try again with a different request by saying `“Actually, i could not find the music you were looking for. Could you try again?“` If the failed request worked previously, please refer to the [Troubleshooting](#troubleshooting)  
   
-# Location  
+## Location  
   
 
      ${skills}/AVmusic.neon
 
-# Files
+## Files
 <details>
 <summary>Click to expand.</summary>
 <br>
@@ -153,11 +153,11 @@ If there is a problem with locating the requested audio or video at any point, N
 </details>
   
 
-# Class Diagram
+## Class Diagram
 [Click Here](https://0000.us/klatchat/app/files/neon_images/class_diagrams/AVmusic.png)
   
 
-# Available Intents
+## Available Intents
 <details>
 <summary>Show list</summary>
 <br>
@@ -247,7 +247,7 @@ If there is a problem with locating the requested audio or video at any point, N
 </details>
 
 
-# Examples
+## Details
 
 ### Text
 
@@ -274,14 +274,14 @@ If there is a problem with locating the requested audio or video at any point, N
 
 ### Video
 
-# Troubleshooting
+## Troubleshooting
 There is a [known issue](https://github.com/ytdl-org/youtube-dl/issues/154) for youtube_dl, where the playback for certain videos and audio files will be temporarily unavailable if you request to listen to the same song and/or video multiple times in a row over a few days. The solution is to avoid requesting the same playback over and over again, try to word your request differently, or wait some time for the limitations to wear off.
 
 Additionally, youtube_dl is currently under active development. Make sure to stay up-to-date by running Neon's update script or use the [manual requirements instructions](#requirements) to do it yourself.
 
-# Contact Support
+## Contact Support
 Use [this link](https://neongecko.com/ContactUs) or
 [submit an issue on GitHub](https://help.github.com/en/articles/creating-an-issue)
 
-# Credits
+## Credits
 reginaneon [neongeckocom](https://neongecko.com/) augustnmonteiro
