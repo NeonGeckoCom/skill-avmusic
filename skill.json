@@ -12,6 +12,14 @@
     "desktopFile": false,
     "warning": "",
     "systemDeps": false,
+    "requirements": {
+        "python": [
+            "youtube-dl>=2021.1.16",
+            "git+https://github.com/neondaniel/youtube_searcher"
+        ],
+        "system": {},
+        "skill": []
+    },
     "platforms": [
         "i386",
         "x86_64",
@@ -30,6 +38,7 @@
         ""
     ],
     "skillname": "AVmusic",
-    "authorname": "NeonGeckoCom",
-    "foldername": "avmusic.neon"
+    "authorname": "Neon",
+    "foldername": "avmusic.neon",
+    "download_url": "https://api.github.com/repos/NeonGeckoCom/avmusic.neon/zipball/master"
 }
