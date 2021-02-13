@@ -258,7 +258,6 @@ class AVmusicSkill(CommonPlaySkill):
         except Exception as e:
             LOG.error(e)
             results = None
-
         return results
 
     def _check_started(self):
