@@ -1,2 +1,2 @@
-youtube-dl>=2021.1.16
+youtube-dl>=2021.2.10
 git+https://github.com/neondaniel/youtube_searcher
