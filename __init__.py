@@ -231,15 +231,17 @@ class AVmusicSkill(CommonPlaySkill):
         if link.startswith("https://www.youtube.com") and \
                 "https://www.googleadservices.com" not in link:
             # self.speak("Here is your video.")
-            self.socket_io_emit('link', f"&link={link}",
-                                message.context["flac_filename"])
+            self.mobile_skill_intent("link", {"link": link}, message)
+            # self.socket_io_emit('link', f"&link={link}",
+            #                     message.context["flac_filename"])
         elif link:
             LOG.warning(f"malformed youtube link: {link}")
             vid_id = link.split("&video_id=")[1].split("&")[0]
             fixed_link = f"https://www.youtube.com/embed/{vid_id}"
             LOG.debug(fixed_link)
-            self.socket_io_emit('link', f"&link={fixed_link}",
-                                message.context["flac_filename"])
+            self.mobile_skill_intent("link", {"link": link}, message)
+            # self.socket_io_emit('link', f"&link={fixed_link}",
+            #                     message.context["flac_filename"])
         else:
             LOG.error("null link!")
 
@@ -261,6 +263,7 @@ class AVmusicSkill(CommonPlaySkill):
         return results
 
     def _check_started(self):
+        # DEPRECIATED METHOD
         LOG.debug('socket start')
         self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         if os.path.exists(self.sock_path):
@@ -285,7 +288,7 @@ class AVmusicSkill(CommonPlaySkill):
                         if str(sink.proplist.get('application.name')) == 'AVmusic':
                             # LOG.debug('DM: Found AVmusic!')
                             volume = sink.volume
-                            volume.value_flat = self.volume
+                            volume.value_flat = self.preference_skill(message)["volume"]
                             self.pulse.volume_set(sink, volume)
                             fixed_vol = True
                     except Exception as e:
