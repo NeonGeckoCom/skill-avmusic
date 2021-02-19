@@ -14,12 +14,13 @@
     "systemDeps": false,
     "requirements": {
         "python": [
-            "youtube-dl>=2021.1.16",
+            "youtube-dl>=2021.2.10",
             "git+https://github.com/neondaniel/youtube_searcher"
         ],
         "system": {},
         "skill": []
     },
+    "incompatible_skills": [],
     "platforms": [
         "i386",
         "x86_64",
