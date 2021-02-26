@@ -288,7 +288,7 @@ class AVmusicSkill(CommonPlaySkill):
                         if str(sink.proplist.get('application.name')) == 'AVmusic':
                             # LOG.debug('DM: Found AVmusic!')
                             volume = sink.volume
-                            volume.value_flat = self.preference_skill(message)["volume"]
+                            volume.value_flat = self.preference_skill()["volume"]
                             self.pulse.volume_set(sink, volume)
                             fixed_vol = True
                     except Exception as e:
