@@ -18,36 +18,22 @@
 # US Patents 2008-2021: US7424516, US20140161250, US20140177813, US8638908, US8068604, US8553852, US10530923, US10530924
 # China Patent: CN102017585  -  Europe Patent: EU2156652  -  Patents Pending
 
-# import base64
 import os
-# import signal
-# import urllib.error
-# import urllib.parse
-# import urllib.request
 import multiprocessing
 import time
 import pulsectl
-# import pyautogui
 import socket
-# from os.path import dirname
-from subprocess import Popen, PIPE  # DEVNULL, STDOUT,
-from youtube_searcher import search_youtube
-# from .tempfix.search.searcher import YoutubeSearcher
-# import requests
-from adapt.intent import IntentBuilder
-# from bs4 import BeautifulSoup, SoupStrainer
-# from youtube_searcher import search_youtube
-from pafy import pafy
 
-from mycroft.skills import CommonPlaySkill, CPSMatchLevel
-# from mycroft.skills.core import MycroftSkill
+from subprocess import Popen, PIPE
+
+from mycroft_bus_client import Message
+from youtube_searcher import search_youtube
+from adapt.intent import IntentBuilder
+from pafy import pafy
+from neon_utils.skills.common_play_skill import CommonPlaySkill, CPSMatchLevel
+from neon_utils.logger import LOG
 from mycroft.util.log import LOG
-from NGI.utilities.utilHelper import NeonHelpers
-# from mycroft.util import create_signal, check_for_signal
-# try:
-#     from mycroft.device import device as d_hw
-# except ImportError:
-#     d_hw = 'desktop'
+# from NGI.utilities.utilHelper import NeonHelpers
 
 
 def embed_url(video_url):
@@ -337,9 +323,10 @@ class AVmusicSkill(CommonPlaySkill):
         self.disable_intent('not_now_intent')
         self.disable_intent('playnow_intent')
         self.create_signal("AV_active")
-        if self.check_for_signal('CORE_skipWakeWord', -1):
-            NeonHelpers.enable_ww()
-            self.create_signal("AV_WW")
+        self.bus.emit(message.forward("neon.wake_words_state", {"enabled": True}))  # TODO: Move to CPS DM
+        # if self.check_for_signal('CORE_skipWakeWord', -1):
+        #     NeonHelpers.enable_ww()
+        #     self.create_signal("AV_WW")
         LOG.debug(self.request_queue.empty())
         if not self.request_queue.empty():
             results = self.request_queue.get()
@@ -610,8 +597,9 @@ class AVmusicSkill(CommonPlaySkill):
                     # self.disable_intent("playback_control_intent")
 
             if self.check_for_signal("AV_WW"):
-                time.sleep(0.5)
-                NeonHelpers.disable_ww()
+                self.bus.emit(Message("neon.wake_words_state", {"enabled": False}))  # TODO: Move to CPS DM
+                # time.sleep(0.5)
+                # NeonHelpers.disable_ww()
 
             self.clear_signals('AV_')
 
