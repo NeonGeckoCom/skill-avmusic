@@ -274,7 +274,7 @@ class AVmusicSkill(CommonPlaySkill):
                         if str(sink.proplist.get('application.name')) == 'AVmusic':
                             # LOG.debug('DM: Found AVmusic!')
                             volume = sink.volume
-                            volume.value_flat = self.preference_skill()["volume"]
+                            volume.value_flat = float(self.preference_skill()["volume"])
                             self.pulse.volume_set(sink, volume)
                             fixed_vol = True
                     except Exception as e:
@@ -336,7 +336,7 @@ class AVmusicSkill(CommonPlaySkill):
             results = None
         if results:
             try:
-                self.speak_dialog('SayStop', {'ww': self.user_info_available['listener']['wake_word'].title()})
+                self.speak_dialog('SayStop', {'ww': self.local_config['listener']['wake_word'].title()})
                 # if d_hw == 'pi':
                 #     self.process = Popen(["mpv", "--vid=no", self.search(utterance)],
                 #                          stdout=DEVNULL, stderr=STDOUT)
@@ -451,7 +451,7 @@ class AVmusicSkill(CommonPlaySkill):
                     LOG.debug(self.socket.recv(1024))
                 except Exception as e:
                     LOG.error(e)
-            self.speak_dialog('SayResume', {'ww': self.user_info_available['listener']['wake_word'].title()},
+            self.speak_dialog('SayResume', {'ww': self.local_config['listener']['wake_word'].title()},
                               message=message)
 
     def _handle_resume(self, message):
