@@ -27,6 +27,7 @@ import socket
 from subprocess import Popen, PIPE
 
 from mycroft_bus_client import Message
+from neon_utils.message_utils import request_from_mobile
 from youtube_searcher import search_youtube
 from adapt.intent import IntentBuilder
 from pafy import pafy
@@ -172,7 +173,7 @@ class AVmusicSkill(CommonPlaySkill):
             self.speak_dialog("TryAgain")
         else:
             # Mobile request
-            if self.request_from_mobile(message):
+            if request_from_mobile(message):
                 self._start_mobile_playback(link, message)
             # Server request
             elif self.server:
