@@ -61,7 +61,7 @@ class AVmusicSkill(CommonPlaySkill):
         # Available Options reflect profiles located in ~/.config/mpv/mpv.conf
         available_options = ["generic", "server", "neonX", "neonPi",
                              "neonAlpha", "neonU", "360p", "480p", "720p", "1080p", "1440p", "2160p"]
-        self.devType = self.configuration_available["devVars"]["devType"]
+        self.devType = self.configuration_available.get("devVars", {}).get("devType", "generic")
         if self.devType in available_options:
             try:
                 if not os.path.isfile(os.path.expanduser('~/.config/mpv/mpv.conf')):
