@@ -21,7 +21,7 @@
 import os
 import multiprocessing
 import time
-import pulsectl
+# import pulsectl
 import socket
 
 from subprocess import Popen, PIPE
@@ -79,9 +79,9 @@ class AVmusicSkill(CommonPlaySkill):
         self.check_for_signal("AV_agreed_to_play")
         self.check_for_signal("AV_asked_to_wait")
         self.check_for_signal("AV_playback_paused")
-        if not self.server:
-            self.pulse = pulsectl.Pulse('Mycroft-audio-service')
-            self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        # if not self.server:
+        #     self.pulse = pulsectl.Pulse('Mycroft-audio-service')
+        #     self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock_path = self.settings['sock_path']
         self.volume = float(self.settings['volume'])
 
