@@ -15,7 +15,9 @@
     "requirements": {
         "python": [
             "youtube-dl>=2021.2.10",
-            "git+https://github.com/neondaniel/youtube_searcher"
+            "pafy~=0.5.5",
+            "git+https://github.com/neondaniel/youtube_searcher",
+            "git+https://github.com/neongeckocom/neon-skill-utils"
         ],
         "system": {},
         "skill": []
@@ -40,6 +42,5 @@
     ],
     "skillname": "AVmusic",
     "authorname": "Neon",
-    "foldername": "avmusic.neon",
-    "download_url": "https://api.github.com/repos/NeonGeckoCom/avmusic.neon/zipball/master"
+    "foldername": "avmusic.neon"
 }
