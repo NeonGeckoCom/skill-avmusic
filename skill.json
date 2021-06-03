@@ -14,7 +14,7 @@
     "systemDeps": false,
     "requirements": {
         "python": [
-            "youtube-dl>=2021.2.10",
+            "youtube-dl>=2021.5.16",
             "pafy~=0.5.5",
             "git+https://github.com/neondaniel/youtube_searcher",
             "git+https://github.com/neongeckocom/neon-skill-utils"
@@ -30,7 +30,7 @@
         "arm64",
         "arm"
     ],
-    "branch": "master",
+    "branch": "dev",
     "license": "NeonAI License v1.0",
     "icon": "https://0000.us/klatchat/app/files/neon_images/icons/neon_skill.png",
     "category": "",
@@ -42,5 +42,5 @@
     ],
     "skillname": "AVmusic",
     "authorname": "Neon",
-    "foldername": "avmusic.neon"
+    "foldername": null
 }
