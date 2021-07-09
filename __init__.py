@@ -61,7 +61,7 @@ class AVmusicSkill(CommonPlaySkill):
         # Available Options reflect profiles located in ~/.config/mpv/mpv.conf
         available_options = ["generic", "server", "neonX", "neonPi",
                              "neonAlpha", "neonU", "360p", "480p", "720p", "1080p", "1440p", "2160p"]
-        self.devType = self.configuration_available.get("devVars", {}).get("devType", "generic")
+        self.devType = self.local_config.get("devVars", {}).get("devType", "generic")
         if self.devType in available_options:
             try:
                 if not os.path.isfile(os.path.expanduser('~/.config/mpv/mpv.conf')):
@@ -262,29 +262,29 @@ class AVmusicSkill(CommonPlaySkill):
             time.sleep(0.2)
         try:
             self.socket.connect(self.sock_path)
-            fixed_vol = False
+            # fixed_vol = False
         except Exception as e:
             LOG.error(e)
             return
 
-        try:
-            while not fixed_vol and time.time() < timeout:
-                for sink in self.pulse.sink_input_list():
-                    try:
-                        # LOG.debug('sink: ' + str(sink.name))
-                        if str(sink.proplist.get('application.name')) == 'AVmusic':
-                            # LOG.debug('DM: Found AVmusic!')
-                            volume = sink.volume
-                            volume.value_flat = float(self.preference_skill()["volume"])
-                            self.pulse.volume_set(sink, volume)
-                            fixed_vol = True
-                    except Exception as e:
-                        LOG.error(e)
-                        fixed_vol = True
-                time.sleep(0.2)
-            LOG.debug(self.socket.recv(2048))
-        except Exception as e:
-            LOG.error(e)
+        # try:
+        #     while not fixed_vol and time.time() < timeout:
+        #         for sink in self.pulse.sink_input_list():
+        #             try:
+        #                 # LOG.debug('sink: ' + str(sink.name))
+        #                 if str(sink.proplist.get('application.name')) == 'AVmusic':
+        #                     # LOG.debug('DM: Found AVmusic!')
+        #                     volume = sink.volume
+        #                     volume.value_flat = float(self.preference_skill()["volume"])
+        #                     self.pulse.volume_set(sink, volume)
+        #                     fixed_vol = True
+        #             except Exception as e:
+        #                 LOG.error(e)
+        #                 fixed_vol = True
+        #         time.sleep(0.2)
+        #     LOG.debug(self.socket.recv(2048))
+        # except Exception as e:
+        #     LOG.error(e)
 
     def check_timeout(self):
         time_start = time.time()
@@ -342,7 +342,7 @@ class AVmusicSkill(CommonPlaySkill):
                 #     self.process = Popen(["mpv", "--vid=no", self.search(utterance)],
                 #                          stdout=DEVNULL, stderr=STDOUT)
                 # else:
-                LOG.debug(f"DM: {results}")
+                # LOG.debug(f"len(results) = {len(results)}")
                 # results = self.search(utterance)
                 if results:
                     LOG.debug(results)
@@ -351,7 +351,7 @@ class AVmusicSkill(CommonPlaySkill):
                     elif isinstance(results, list):  # TODO: Depreciated? DM
                         link = results[0]
                     elif isinstance(results, dict):
-                        link = results.get("videos", [])[0].get("url)")
+                        link = results.get("videos", [])[0].get("url")
                     else:
                         link = None
                         LOG.error(f"No link in results={results}")
@@ -373,7 +373,7 @@ class AVmusicSkill(CommonPlaySkill):
                     self.speak("No Results")
                 else:
                     if self.gui_enabled:
-                        LOG.debug(results)
+                        # LOG.debug(results)
                         video = pafy.new(link)
                         playstream = video.streams[0]
                         LOG.info(video)
