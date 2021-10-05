@@ -17,7 +17,7 @@
             "youtube-dl>=2021.5.16",
             "pafy~=0.5.5",
             "git+https://github.com/neondaniel/youtube_searcher",
-            "git+https://github.com/neongeckocom/neon-skill-utils"
+            "neon-utils>=0.5.7"
         ],
         "system": {},
         "skill": []
@@ -41,6 +41,6 @@
         ""
     ],
     "skillname": "AVmusic",
-    "authorname": "Neon",
+    "authorname": "NeonGeckoCom",
     "foldername": null
 }
