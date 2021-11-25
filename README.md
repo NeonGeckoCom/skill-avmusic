@@ -3,8 +3,8 @@
   
 ## Summary  
   
-Provides the video/audio playback of any music or video request made by the user. No need to specify the location of the files or register any accounts. Just say what you would like to listen to and enjoy.  
-  
+Play a song or video requested by the user.
+
 ## Requirements  
 All of the requirements should be installed automatically during original Neonâ€™s setup. If you have any problems, or are adding the skill later on, please [feel free to contact our team for support](#contact-support) or use the following instructions to install the requirements manually:  
   
@@ -29,7 +29,9 @@ All of the requirements should be installed automatically during original Neonâ€
   
 ## Description  
   
-The skill provides the functionality to playback any audio or video requested by the user.
+The skill provides the functionality to playback any audio or video requested by the user. No need to specify the 
+location of the files or register any accounts. Just say what you would like to listen to and enjoy.  
+  
 AVmusic implements full integration of youtube_dl services and supports requests including but not limited to:
   
 - Music bands  
@@ -284,4 +286,13 @@ Use [this link](https://neongecko.com/ContactUs) or
 [submit an issue on GitHub](https://help.github.com/en/articles/creating-an-issue)
 
 ## Credits
-reginaneon [neongeckocom](https://neongecko.com/) augustnmonteiro
+[reginaneon](https://github.com/reginaneon)
+[NeonGeckoCom](https://github.com/NeonGeckoCom)
+[augustnmonteiro](https://github.com/augustnmonteiro)
+
+## Tags
+#NeonGecko Original
+#NeonAI
+#Music
+#Videos
+#Common Play
