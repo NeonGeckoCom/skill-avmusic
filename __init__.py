@@ -83,15 +83,13 @@ class AVmusicSkill(CommonPlaySkill):
         self.pause_queue = multiprocessing.Queue()
         self.video_results = dict()
         self.requested_options = []
-        # self.pid = []
         self.check_for_signal("AV_agreed_to_play")
         self.check_for_signal("AV_asked_to_wait")
         self.check_for_signal("AV_playback_paused")
-        # if not self.server:
-        #     self.pulse = pulsectl.Pulse('Mycroft-audio-service')
-        #     self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.sock_path = self.settings['sock_path']
-        self.volume = float(self.settings['volume'])
+
+    @property
+    def volume(self):
+        return float(self.settings.get("volume") or 1)
 
     def initialize(self):
         playnow_intent = IntentBuilder("playnow_intent").require("AgreementKeyword").build()
@@ -260,16 +258,17 @@ class AVmusicSkill(CommonPlaySkill):
     def _check_started(self):
         # DEPRECIATED METHOD
         LOG.debug('socket start')
+        sock_path = self.settings['sock_path']
         self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        if os.path.exists(self.sock_path):
-            os.remove(self.sock_path)
+        if os.path.exists(sock_path):
+            os.remove(sock_path)
         timeout = time.time() + 10
-        while not os.path.exists(self.sock_path):
+        while not os.path.exists(sock_path):
             if time.time() > timeout:
                 break
             time.sleep(0.2)
         try:
-            self.socket.connect(self.sock_path)
+            self.socket.connect(sock_path)
             # fixed_vol = False
         except Exception as e:
             LOG.error(e)
@@ -558,7 +557,7 @@ class AVmusicSkill(CommonPlaySkill):
         """
         LOG.info(vid_link)
         param_options = ["mpv", "--force-window", "--volume=100", "--audio-client-name=AVmusic",
-                         "--input-ipc-server=" + self.sock_path]
+                         "--input-ipc-server=" + self.settings["sock_path"]]
         if self.devType:
             options.append("custom")
 
