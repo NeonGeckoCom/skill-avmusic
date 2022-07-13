@@ -1,4 +1,4 @@
 youtube-dl>=2021.5.16
 pafy~=0.5.5
-git+https://github.com/neondaniel/youtube_searcher
-neon-utils>=0.5.7
+youtube-searcher
+neon-utils>=0.5.7,<2.0.0
