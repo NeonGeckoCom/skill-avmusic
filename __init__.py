@@ -29,20 +29,18 @@
 import os
 import multiprocessing
 import time
-# import pulsectl
 import socket
 
 from subprocess import Popen, PIPE
 
 from mycroft_bus_client import Message
-from neon_utils.message_utils import request_from_mobile
+from neon_utils.message_utils import request_from_mobile, get_message_user, dig_for_message
 from youtube_searcher import search_youtube
 from adapt.intent import IntentBuilder
 from pafy import pafy
 from neon_utils.skills.common_play_skill import CommonPlaySkill, CPSMatchLevel
 from neon_utils.logger import LOG
-from mycroft.util.log import LOG
-# from NGI.utilities.utilHelper import NeonHelpers
+from neon_utils.signal_utils import create_signal, check_for_signal
 
 
 def embed_url(video_url):
@@ -66,26 +64,12 @@ class AVmusicSkill(CommonPlaySkill):
         self.resume_opts = ['resume', 'proceed', 'continue']
         self.next_opts = ['next', 'skip', 'forward']
         self.prev_opts = ['previous', 'back', 'last']
-        # Available Options reflect profiles located in ~/.config/mpv/mpv.conf
-        available_options = ["generic", "server", "neonX", "neonPi",
-                             "neonAlpha", "neonU", "360p", "480p", "720p", "1080p", "1440p", "2160p"]
-        self.devType = self.local_config.get("devVars", {}).get("devType", "generic")
-        if self.devType in available_options:
-            try:
-                if not os.path.isfile(os.path.expanduser('~/.config/mpv/mpv.conf')):
-                    self.devType = None
-            except Exception as e:
-                LOG.error(e)
-        else:
-            self.devType = None
+        self.devType = None
 
         self.request_queue = multiprocessing.Queue()
         self.pause_queue = multiprocessing.Queue()
         self.video_results = dict()
         self.requested_options = []
-        self.check_for_signal("AV_agreed_to_play")
-        self.check_for_signal("AV_asked_to_wait")
-        self.check_for_signal("AV_playback_paused")
 
     @property
     def volume(self):
@@ -116,9 +100,6 @@ class AVmusicSkill(CommonPlaySkill):
     def CPS_match_query_phrase(self, phrase, message):
         self.requested_options = []
         utterance = phrase.lower()
-        if self.check_for_signal('CORE_skipWakeWord', -1):
-            if self.voc_match(phrase, 'Neon'):
-                pass
         LOG.info(utterance)
 
         # Clean keywords from search string (utterance)
@@ -169,6 +150,7 @@ class AVmusicSkill(CommonPlaySkill):
         return phrase, conf, {"results": results, "link": link, "skill_gui": True}
 
     def CPS_start(self, phrase, data, message=None):
+        message = message or dig_for_message()
         link = data["link"]
         results = data["results"]
         LOG.debug(f"AVMusic selected to play {link}")
@@ -182,7 +164,7 @@ class AVmusicSkill(CommonPlaySkill):
             if request_from_mobile(message):
                 self._start_mobile_playback(link, message)
             # Server request
-            elif self.server:
+            elif message.context.get("klat_data"):
                 # self.speak(str(self.search(utterance + "playlist")))
                 LOG.debug(f"Link to send: {link}")
                 if link.startswith("https://www.youtube.com"):
@@ -204,7 +186,7 @@ class AVmusicSkill(CommonPlaySkill):
                 LOG.debug(f'add to queue: {results.get("videos", [])[0]}')
                 self.request_queue.put(results.get("videos", [])[0].get("url"))
                 LOG.debug(self.request_queue.empty())
-                self.video_results[self.get_utterance_user(message)] = {"current": 0, "results": results}
+                self.video_results[get_message_user(message)] = {"current": 0, "results": results}
                 if "http" not in phrase:
                     self.speak('Would you like me to play it now?', True)
                     t = multiprocessing.Process(target=self.check_timeout())  # TODO: Use skill event scheduler DM
@@ -223,8 +205,10 @@ class AVmusicSkill(CommonPlaySkill):
         time.sleep(2)
         if link.startswith("https://www.youtube.com") and \
                 "https://www.googleadservices.com" not in link:
+            pass
+            # TODO
             # self.speak("Here is your video.")
-            self.mobile_skill_intent("link", {"link": link}, message)
+            # self.mobile_skill_intent("link", {"link": link}, message)
             # self.socket_io_emit('link', f"&link={link}",
             #                     message.context["flac_filename"])
         elif link:
@@ -232,7 +216,8 @@ class AVmusicSkill(CommonPlaySkill):
             vid_id = link.split("&video_id=")[1].split("&")[0]
             fixed_link = f"https://www.youtube.com/embed/{vid_id}"
             LOG.debug(fixed_link)
-            self.mobile_skill_intent("link", {"link": link}, message)
+            # TODO
+            # self.mobile_skill_intent("link", {"link": link}, message)
             # self.socket_io_emit('link', f"&link={fixed_link}",
             #                     message.context["flac_filename"])
         else:
@@ -296,26 +281,26 @@ class AVmusicSkill(CommonPlaySkill):
     def check_timeout(self):
         time_start = time.time()
         if not self.pause_queue.empty():
-            while self.check_for_signal("AV_playback_paused", -1):
+            while check_for_signal("AV_playback_paused", -1):
                 if time.time() - time_start >= 50:
                     LOG.info("Paused too long")
                     self.pause_queue.get()
-                    self.check_for_signal("AV_agreed_to_play")
-                    self.check_for_signal("AV_playback_paused")
-                    self.create_signal("AV_stoppedFromPause")
+                    check_for_signal("AV_agreed_to_play")
+                    check_for_signal("AV_playback_paused")
+                    create_signal("AV_stoppedFromPause")
                     # self.disable_intent('playback_control_intent')
                     self.stop()
                     return
 
         if not self.request_queue.empty():
-            while not self.check_for_signal("AV_agreed_to_play", -1):
+            while not check_for_signal("AV_agreed_to_play", -1):
                 if time.time() - time_start >= 30:
-                    if not self.check_for_signal("AV_asked_to_wait"):
+                    if not check_for_signal("AV_asked_to_wait"):
                         self.request_queue.get()
                         LOG.info("Too much time passed")
                         self.disable_intent('not_now_intent')
                         self.disable_intent('playnow_intent')
-                        self.clear_signals('AV_')
+                        # self.clear_signals('AV_')
                         # self.disable_intent('playback_control_intent')
                         break
                     else:
@@ -326,25 +311,25 @@ class AVmusicSkill(CommonPlaySkill):
     def handle_play_now_intent(self, message):
         # TODO: Handle playback over
         # self.enable_intent('playback_control_intent')
-        self.create_signal("AV_agreed_to_play")
-        self.check_for_signal("AV_asked_to_wait")
+        create_signal("AV_agreed_to_play")
+        check_for_signal("AV_asked_to_wait")
         self.disable_intent('not_now_intent')
         self.disable_intent('playnow_intent')
-        self.create_signal("AV_active")
+        create_signal("AV_active")
         self.bus.emit(message.forward("neon.wake_words_state", {"enabled": True}))  # TODO: Move to CPS DM
-        # if self.check_for_signal('CORE_skipWakeWord', -1):
+        # if check_for_signal('CORE_skipWakeWord', -1):
         #     NeonHelpers.enable_ww()
-        #     self.create_signal("AV_WW")
+        #     create_signal("AV_WW")
         LOG.debug(self.request_queue.empty())
         if not self.request_queue.empty():
             results = self.request_queue.get()
-        elif self.video_results.get(self.get_utterance_user(message)):
-            results = self.video_results[self.get_utterance_user(message)]["results"]
+        elif self.video_results.get(get_message_user(message)):
+            results = self.video_results[get_message_user(message)]["results"]
         else:
             results = None
         if results:
             try:
-                self.speak_dialog('SayStop', {'ww': self.local_config['listener']['wake_word'].title()})
+                self.speak_dialog('SayStop', {'ww': "Hey Neon"})  # TODO
                 # if d_hw == 'pi':
                 #     self.process = Popen(["mpv", "--vid=no", self.search(utterance)],
                 #                          stdout=DEVNULL, stderr=STDOUT)
@@ -393,7 +378,7 @@ class AVmusicSkill(CommonPlaySkill):
                         if self.process:
                             output, error = self.process.communicate()
                             # First Playback Attempt Failed
-                            if self.process.returncode != 0 and not self.check_for_signal("AV_stoppedFromPause"):
+                            if self.process.returncode != 0 and not check_for_signal("AV_stoppedFromPause"):
                                 LOG.warning("Failed at request:  %d %s %s" % (self.process.returncode, output, error))
                                 # LOG.info("Trying again")
                                 # if self.process.pid in self.pid:
@@ -406,12 +391,12 @@ class AVmusicSkill(CommonPlaySkill):
                                     # Second Playback Attempt Failed
                                     if self.process:
                                         if self.process.returncode != 0 and not\
-                                                self.check_for_signal("AV_stoppedFromPause"):
+                                                check_for_signal("AV_stoppedFromPause"):
                                             LOG.warning("Failed at request:  %d %s %s" % (self.process.returncode,
                                                                                           output, error))
                                             self.speak_dialog('TryAgain')
                                             self.stop()
-                                            # if self.check_for_signal("AV_WW"):
+                                            # if check_for_signal("AV_WW"):
                                             #     NeonHelpers.disable_ww()
                                 except TypeError or Exception as e:
                                     LOG.error(e)
@@ -422,25 +407,25 @@ class AVmusicSkill(CommonPlaySkill):
                             try:
                                 # self.pause_queue.get()
                                 # self.pause_queue.get()
-                                self.check_for_signal("AV_agreed_to_play")
-                                self.check_for_signal("AV_playback_paused")
+                                check_for_signal("AV_agreed_to_play")
+                                check_for_signal("AV_playback_paused")
                             except Exception as e:
                                 LOG.error(e)
                                 self.stop()
-                            # if self.check_for_signal("AV_WW"):
+                            # if check_for_signal("AV_WW"):
                             #     NeonHelpers.disable_ww()
 
             except TypeError or Exception as e:
                 LOG.error(e)
                 self.speak_dialog('TryAgain')
-                # if self.check_for_signal("AV_WW"):
+                # if check_for_signal("AV_WW"):
                 #     NeonHelpers.disable_ww()
                 self.stop()
 
-            self.check_for_signal("AV_agreed_to_play")
+            check_for_signal("AV_agreed_to_play")
 
     def handle_not_now_intent(self):
-        self.create_signal("AV_asked_to_wait")
+        create_signal("AV_asked_to_wait")
         self.speak_dialog('ChangeMind')
         self.disable_intent('not_now_intent')
 
@@ -449,17 +434,17 @@ class AVmusicSkill(CommonPlaySkill):
         Handle request to pause playback
         :param message: Message associated with request
         """
-        if self.check_for_signal("AV_active", -1):  # TODO: Signal isn't necessary? DM
+        if check_for_signal("AV_active", -1):  # TODO: Signal isn't necessary? DM
             if self.gui_enabled:
                 self.gui["status"] = "pause"
-            elif not self.server:
+            elif not message.context.get("klat_data"):
                 command = b'{"command": ["set", "pause", "yes"]}\n'
                 try:
                     self.socket.send(command)
                     LOG.debug(self.socket.recv(1024))
                 except Exception as e:
                     LOG.error(e)
-            self.speak_dialog('SayResume', {'ww': self.local_config['listener']['wake_word'].title()},
+            self.speak_dialog('SayResume', {'ww': "Hey Neon"},
                               message=message)
 
     def _handle_resume(self, message):
@@ -467,10 +452,10 @@ class AVmusicSkill(CommonPlaySkill):
         Handle request resume playback
         :param message: Message associated with request
         """
-        if self.check_for_signal("AV_active", -1):  # TODO: Signal isn't necessary? DM
+        if check_for_signal("AV_active", -1):  # TODO: Signal isn't necessary? DM
             if self.gui_enabled:
                 self.gui["status"] = "play"
-            elif not self.server:
+            elif not message.context.get('klat_data'):
                 command = b'{"command": ["set", "pause", "no"]}\n'
                 try:
                     self.socket.send(command)
@@ -485,7 +470,7 @@ class AVmusicSkill(CommonPlaySkill):
         :param message: Message associated with request
         """
         # LOG.debug("got here")
-        user = self.get_utterance_user(message)
+        user = get_message_user(message)
         if self.gui_enabled:
             if user in self.video_results.keys():
                 track_list = self.video_results[user].get("results", {}).get("videos", [])
@@ -502,7 +487,7 @@ class AVmusicSkill(CommonPlaySkill):
                 self.gui["status"] = "play"  # play, stop, pause
                 self.video_results[user]["current"] = playing
 
-        elif not self.server and self.check_for_signal("AV_active", -1):
+        elif not message.context.get('klat_data') and check_for_signal("AV_active", -1):
             command = b'{"command": ["playlist_next"]}\n'
             try:
                 self.socket.send(command)
@@ -516,7 +501,7 @@ class AVmusicSkill(CommonPlaySkill):
         Handle request to skip back
         :param message: Message associated with request
         """
-        user = self.get_utterance_user(message)
+        user = get_message_user(message)
         if self.gui_enabled:
             if user in self.video_results.keys():
                 track_list = self.video_results[user].get("results", {}).get("videos", [])
@@ -535,10 +520,10 @@ class AVmusicSkill(CommonPlaySkill):
                 self.gui["status"] = "play"  # play, stop, pause
                 self.video_results[user]["current"] = playing
 
-        elif not self.server and self.check_for_signal("AV_active", -1):
+        elif not message.context.get('klat_data') and check_for_signal("AV_active", -1):
             if self.gui_enabled:
                 pass
-            elif not self.server:
+            elif not message.context.get('klat_data'):
                 command = b'{"command": ["playlist_prev"]}\n'
                 try:
                     self.socket.send(command)
@@ -592,11 +577,12 @@ class AVmusicSkill(CommonPlaySkill):
         }.get(x, "")
 
     def stop(self):
-        if not self.server:
+        message = dig_for_message() or Message("")
+        if not message.context.get('klat_data'):
             if self.gui_enabled:
                 self.gui.clear()
             else:
-                if self.check_for_signal("AV_active"):
+                if check_for_signal("AV_active"):
                     try:
                         self.socket.send(b'{"command": ["quit"]}\n')
                         self.socket.close()
@@ -604,12 +590,10 @@ class AVmusicSkill(CommonPlaySkill):
                         LOG.error(e)
                     # self.disable_intent("playback_control_intent")
 
-            if self.check_for_signal("AV_WW"):
+            if check_for_signal("AV_WW"):
                 self.bus.emit(Message("neon.wake_words_state", {"enabled": False}))  # TODO: Move to CPS DM
                 # time.sleep(0.5)
                 # NeonHelpers.disable_ww()
-
-            self.clear_signals('AV_')
 
             # Ensure queue is empty before next request
             while not self.request_queue.empty():
